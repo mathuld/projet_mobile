@@ -24,10 +24,15 @@ public class GalleryView extends View {
 
     private List<String> imagesPath;
 
+    private static int NB_COMPRESSOR = 5;
+    private Compressor[] mCompressors;
+
 
     public GalleryView(Context context){
         super(context);
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
+
+        mCompressors = new Compressor[NB_COMPRESSOR];
     }
 
     @Override
@@ -87,9 +92,9 @@ public class GalleryView extends View {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
+
         return  Bitmap.createScaledBitmap(bitmap, size, size, true);
     }
-
 
 
 }
