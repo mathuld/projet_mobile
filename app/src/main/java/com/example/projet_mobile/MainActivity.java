@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode){
             case READ_PERMISSION_REQUEST:
-
                 break;
         }
 
