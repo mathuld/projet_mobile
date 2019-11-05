@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.view.View;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -22,11 +23,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int READ_PERMISSION_REQUEST = 0x01;
 
+    private GalleryView mGalleryView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(new GalleryView(this));
+        mGalleryView = new GalleryView(this);
+        setContentView(mGalleryView);
     }
 
     @Override
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},READ_PERMISSION_REQUEST);
         } else {
-            getImages();
+            initImages();
         }
     }
 
@@ -51,8 +54,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            getImages();
+            initImages();
         }
+    }
+
+    private void initImages() {
+        mGalleryView.setImages(getImages());
     }
 
     private List<String> getImages(){

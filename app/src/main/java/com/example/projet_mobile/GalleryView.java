@@ -1,10 +1,19 @@
 package com.example.projet_mobile;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 public class GalleryView extends View {
 
@@ -12,6 +21,9 @@ public class GalleryView extends View {
     private int mNbColumns = 3;
 
     private ScaleGestureDetector mScaleGestureDetector;
+
+    private List<String> imagesPath;
+
 
     public GalleryView(Context context){
         super(context);
@@ -21,9 +33,12 @@ public class GalleryView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawBitmap();
 
+
+        canvas.drawBitmap(getCompressImage(0, 500), null, new Rect(0,0,500,500), null);
     }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -58,6 +73,23 @@ public class GalleryView extends View {
             return true;
         }
     }
+
+    public void setImages(List<String> imagesPath) {
+        this.imagesPath = imagesPath;
+        invalidate();
+    }
+
+    @Nullable
+    public Bitmap getCompressImage(int index, int size) {
+        if (imagesPath == null || imagesPath.size() < index)
+            return null;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 4;
+        Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
+        return  Bitmap.createScaledBitmap(bitmap, size, size, true);
+    }
+
 
 
 }
