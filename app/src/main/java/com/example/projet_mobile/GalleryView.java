@@ -1,16 +1,23 @@
 package com.example.projet_mobile;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.GestureDetector;
+
+import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-
 import java.util.Random;
+import androidx.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 public class GalleryView extends View {
 
@@ -23,6 +30,9 @@ public class GalleryView extends View {
 
     private static int MAX_PICTURES = 1000;
     private Paint[] mColors;
+
+    private List<String> imagesPath;
+
 
     public GalleryView(Context context){
         super(context);
@@ -67,10 +77,13 @@ public class GalleryView extends View {
                 imgOffset = (firstLineImg*mNbColumns) + j * mNbColumns + i;
                 if (imgOffset < MAX_PICTURES) {
                     canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
+                    //canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,new Paint(Color.BLACK));
                 }
             }
         }
     }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -121,5 +134,21 @@ public class GalleryView extends View {
             invalidate();
             return true;
         }
+    }
+
+    public void setImages(List<String> imagesPath) {
+        this.imagesPath = imagesPath;
+        invalidate();
+    }
+
+    @Nullable
+    public Bitmap getCompressImage(int index, int size) {
+        if (imagesPath == null || imagesPath.size() < index)
+            return null;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 4;
+        Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
+        return  Bitmap.createScaledBitmap(bitmap, size, size, true);
     }
 }
