@@ -15,6 +15,8 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,14 +54,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getImages(){
+    private List<String> getImages(){
+        List<String> imagesPath = new ArrayList<>();
+
         ContentResolver cr = getContentResolver();
         String[] projection = {MediaStore.Images.Media.DATA};
         Cursor data = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,projection,null,null,null);
 
         for (data.moveToLast(); !data.isBeforeFirst(); data.moveToPrevious()){
             String photoPath = data.getString(0);
-            System.out.println(photoPath);
+            imagesPath.add(photoPath);
         }
+        return imagesPath;
     }
 }
