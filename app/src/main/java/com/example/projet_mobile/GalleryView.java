@@ -33,17 +33,13 @@ public class GalleryView extends View {
 
     private List<String> imagesPath;
 
-    private static int NB_COMPRESSOR = 5;
-    private Compressor[] mCompressors;
 
 
     public GalleryView(Context context){
         super(context);
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
-
-        mCompressors = new Compressor[NB_COMPRESSOR];
-
+        
         mScrollGestureDetector = new GestureDetector(context,new ScrollGesture());
 
 
@@ -84,8 +80,8 @@ public class GalleryView extends View {
                 xOffset = i * imgWidth;
                 imgOffset = (firstLineImg*mNbColumns) + j * mNbColumns + i;
                 if (imgOffset < MAX_PICTURES) {
-                    canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
-                    //canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,new Paint(Color.BLACK));
+//                    canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
+                    canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,null);
                 }
             }
         }
@@ -146,7 +142,6 @@ public class GalleryView extends View {
 
     public void setImages(List<String> imagesPath) {
         this.imagesPath = imagesPath;
-        invalidate();
     }
 
     @Nullable
