@@ -34,9 +34,12 @@ public class GalleryView extends View {
 
     private Paint mPaint = new Paint(Color.BLACK);
 
+
     public GalleryView(Context context){
         super(context);
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
+
+        
         mScrollGestureDetector = new GestureDetector(context,new ScrollGesture());
 
 
@@ -46,7 +49,6 @@ public class GalleryView extends View {
             mColors[i] = new Paint();
             mColors[i].setColor(Color.argb(255, r.nextInt(256), r.nextInt(256), r.nextInt(256)));
         }
-
         mNbColumns = 3;
         mNbRows = MAX_PICTURES/mNbColumns;
         mPictureSize = getWidth()/mNbColumns;
@@ -163,9 +165,18 @@ public class GalleryView extends View {
         if (imagesPath == null || imagesPath.size() < index)
             return null;
 
+        String uri = imagesPath.get(index);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 24;
-        Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(uri, options);
+        int imageWidth = options.outWidth;
+//        int imageHeight = options.outHeight;
+
+        BitmapFactory.Options options2 = new BitmapFactory.Options();
+        options2.inSampleSize = size / imageWidth;
+        Bitmap bitmap =  BitmapFactory.decodeFile(uri, options2);
+
         return  Bitmap.createScaledBitmap(bitmap, size, size, true);
     }
 }
