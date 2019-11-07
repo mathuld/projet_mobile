@@ -4,26 +4,25 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.GestureDetector;
-
-import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import java.util.Random;
+
 import androidx.annotation.Nullable;
-import java.io.ByteArrayOutputStream;
+
+import java.util.Random;
 import java.util.List;
 
 public class GalleryView extends View {
 
-    private float mScale = 1f;
-    private int mNbColumns = 3;
+    private float mScale = 3f;
+    private int mNbColumns = (int) mScale;
+    private int mNbRows;
     private int mScrollOffset;
+    private int mPictureSize;
 
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetector mScrollGestureDetector;
@@ -33,6 +32,7 @@ public class GalleryView extends View {
 
     private List<String> imagesPath;
 
+    private Paint mPaint = new Paint(Color.BLACK);
 
     public GalleryView(Context context){
         super(context);
@@ -46,6 +46,10 @@ public class GalleryView extends View {
             mColors[i] = new Paint();
             mColors[i].setColor(Color.argb(255, r.nextInt(256), r.nextInt(256), r.nextInt(256)));
         }
+
+        mNbColumns = 3;
+        mNbRows = MAX_PICTURES/mNbColumns;
+        mPictureSize = getWidth()/mNbColumns;
     }
 
     @Override
@@ -53,31 +57,29 @@ public class GalleryView extends View {
         super.onDraw(canvas);
         int cHeight = getHeight();
         int cWidth = getWidth();
+        mPictureSize = cWidth/mNbColumns;
         //System.out.println(canvas.getHeight() + ":" + canvas.getWidth());
 
-        int imgWidth = cWidth/mNbColumns;
-        int imgHeight = imgWidth;
 
-
-        int firstLineImg = mScrollOffset/imgHeight;
+        int firstLineImg = mScrollOffset/mPictureSize;
         System.out.println(firstLineImg);
 
         /* Total number of columns/rows displayed (even truncated rows) */
         int cCol = mNbColumns;
-        int cRow = cHeight/imgHeight + 1;
+        int cRow = cHeight/mPictureSize + 2;
 
 
         int xOffset;
         int yOffset;
         int imgOffset;
         for (int j = 0; j < cRow ; j++){
-            yOffset = j * imgHeight;
+            yOffset = j * mPictureSize - (mScrollOffset % mPictureSize);
             for (int i  = 0; i < cCol; i++){
-                xOffset = i * imgWidth;
+                xOffset = i * mPictureSize;
                 imgOffset = (firstLineImg*mNbColumns) + j * mNbColumns + i;
                 if (imgOffset < MAX_PICTURES) {
-                    canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
-                    //canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,new Paint(Color.BLACK));
+                    canvas.drawRect(xOffset,yOffset,xOffset + mPictureSize,yOffset + mPictureSize, mColors[imgOffset]);
+                    //canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,mPaint);
                 }
             }
         }
@@ -105,8 +107,22 @@ public class GalleryView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             mScrollOffset += distanceY;
-            if (mScrollOffset < 0) { mScrollOffset = 0;}
-            System.out.println("Scroll offset = " + mScrollOffset);
+            /* Stop scrolling before first picture and after last picture */
+            if (mScrollOffset < 0) {
+                mScrollOffset = 0;
+            } else {
+                /* Tricky, they can be cases, either the last line of pictures is full or either it's not */
+                if (MAX_PICTURES%mNbRows == 0){ /* Last line is full */
+                    if (mScrollOffset > (mNbRows * mPictureSize - getHeight())){
+                        mScrollOffset = (mNbRows * mPictureSize - getHeight());
+                    }
+                } else { /* Last line is not full*/
+                    if (mScrollOffset > ((mNbRows + 1) * mPictureSize - getHeight())){
+                        mScrollOffset = ((mNbRows + 1) * mPictureSize - getHeight());
+                    }
+                }
+
+            }
             invalidate();
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
@@ -120,16 +136,16 @@ public class GalleryView extends View {
     public class ScaleGesture extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-
-            //System.out.println(detector.getScaleFactor());
-
             mScale /= detector.getScaleFactor();
 
             mScale = Math.min(mScale, 7);
             mScale = Math.max(mScale,1);
 
             mNbColumns = (int) mScale;
-            System.out.println(mNbColumns);
+            mNbRows = MAX_PICTURES/mNbColumns;
+
+            mPictureSize = getWidth()/mNbColumns;
+
 
             invalidate();
             return true;
@@ -138,6 +154,7 @@ public class GalleryView extends View {
 
     public void setImages(List<String> imagesPath) {
         this.imagesPath = imagesPath;
+        //MAX_PICTURES = imagesPath.size();
         invalidate();
     }
 
@@ -147,7 +164,7 @@ public class GalleryView extends View {
             return null;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
+        options.inSampleSize = 24;
         Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
         return  Bitmap.createScaledBitmap(bitmap, size, size, true);
     }
