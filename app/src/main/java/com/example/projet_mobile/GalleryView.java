@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.text.style.ImageSpan;
 import android.util.SparseArray;
@@ -44,6 +45,7 @@ public class GalleryView extends View {
 
     private Paint mPaint = new Paint(Color.BLACK);
     private ImagesCache mCache;
+    private BitmapCache mBitmapCache;
 
 
     public GalleryView(Context context) {
@@ -63,6 +65,7 @@ public class GalleryView extends View {
         mNbColumns = 3;
         mNbRows = MAX_PICTURES/mNbColumns;
         mPictureSize = getWidth()/mNbColumns;
+        mBitmapCache = new BitmapCache();
     }
 
     @Override
@@ -98,10 +101,22 @@ public class GalleryView extends View {
                 imgOffset = (firstLineImg * mNbColumns) + j * mNbColumns + i;
                 if (imgOffset < MAX_PICTURES) {
                     //canvas.drawRect(xOffset,yOffset,xOffset + mPictureSize,yOffset + mPictureSize, mColors[imgOffset]);
-                    Bitmap bitmap = getCompressImage(imgOffset, mPictureSize);
-                    if (bitmap != null)
-                        canvas.drawBitmap(bitmap, xOffset, yOffset, null);
+                    //BitmapDrawable bitmap = mCache.getEntry(imgOffset);
+                    //if (bitmap == null){
+                    //    loadCompressImage(imgOffset, mPictureSize);
+                    //} else {
+                    //    bitmap.setBounds(xOffset,yOffset,xOffset+mPictureSize,yOffset+mPictureSize);
+                    //    bitmap.draw(canvas);
+                    //}
 
+                    Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(imgOffset);
+                    if (bitmap == null){
+                        loadCompressImage(imgOffset,mPictureSize);
+                    } else {
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(),bitmap);
+                        bitmapDrawable.setBounds(xOffset,yOffset,xOffset+mPictureSize,yOffset+mPictureSize);
+                        bitmapDrawable.draw(canvas);
+                    }
                 }
             }
         }
@@ -175,36 +190,39 @@ public class GalleryView extends View {
 
     public void setImages(List<String> imagesPath) {
         this.imagesPath = imagesPath;
-        //MAX_PICTURES = imagesPath.size();
+        MAX_PICTURES = imagesPath.size();
         invalidate();
     }
 
     @Nullable
-    public Bitmap getCompressImage(int index, int size) {
+    public void loadCompressImage(int index, int size) {
         if (imagesPath == null || index >= imagesPath.size())
-            return null;
+            return;
 
 
-        Bitmap bitmap = mCache.getEntry(index);
+        //if (bitmap == null) {
+        Thread tx = new Thread(() -> {
+                String uri = imagesPath.get(index);
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(uri, options);
 
-        String uri = imagesPath.get(index);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(uri, options);
-        float aspectRatio = options.outWidth / (float) options.outHeight;
+                float aspectRatio = options.outWidth / (float) options.outHeight;
 
+                options.inJustDecodeBounds = false;
 
-        if (bitmap == null) {
+                options.inSampleSize = calculateInSampleSize(options, size, size);
+                //options.inSampleSize = options.outWidth / size;
+                Bitmap tmpBitmap = BitmapFactory.decodeFile(uri, options);
 
-            options.inJustDecodeBounds = false;
-//            options.inSampleSize = calculateInSampleSize(options, size, size);
-            options.inSampleSize = options.outWidth / size;
+                Bitmap finalBitmap = Bitmap.createScaledBitmap(tmpBitmap, size, (int) (size / aspectRatio), true);
+                //mCache.addEntry(index, new BitmapDrawable(getResources(),tmpBitmap));
 
-            bitmap = BitmapFactory.decodeFile(uri, options);
-            mCache.addEntry(index, bitmap);
-        }
-
-        return Bitmap.createScaledBitmap(bitmap, size, (int) (size / aspectRatio), true);
+                mBitmapCache.addBitmapToMemoryCache(index,finalBitmap);
+                invalidate();
+            }
+        );
+        tx.start();
     }
 
     public static int calculateInSampleSize(
