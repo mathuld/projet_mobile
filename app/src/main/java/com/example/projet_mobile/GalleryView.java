@@ -200,7 +200,7 @@ public class GalleryView extends View {
                 //mCache.addEntry(index, new BitmapDrawable(getResources(),tmpBitmap));
 
                 mBitmapCache.addBitmapToMemoryCache(index,finalBitmap);
-                invalidate();
+                postInvalidate();
             }
         );
         tx.start();
