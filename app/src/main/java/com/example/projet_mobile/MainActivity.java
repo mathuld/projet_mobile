@@ -49,8 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode){
             case READ_PERMISSION_REQUEST:
-                if (grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     initImages();
+                } else {
+                    finish();
                 }
                 break;
         }
