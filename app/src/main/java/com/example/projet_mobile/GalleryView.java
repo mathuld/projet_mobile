@@ -172,7 +172,7 @@ public class GalleryView extends View {
 
     @Nullable
     public void loadCompressImage(int index, int size) {
-        if (index >= mImagesPath.size())
+        if (index < 0  || index >= mImagesPath.size())
             return;
 
 
