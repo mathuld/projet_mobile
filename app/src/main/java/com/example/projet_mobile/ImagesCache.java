@@ -1,11 +1,21 @@
+/**
+ * ImagesCache.java
+ * Université du Québec à Chicoutimi - Automne 2019
+ * Programmation Mobile
+ * TP
+ * Romain GUILLOT - Tanguy SAUTON - Mathieu VINCENT
+ */
 package com.example.projet_mobile;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 
+/**
+ * [Déprécié]
+ * Implémente un système basique de cache pour les BitmapDrawable. La taille du cache est fixée à sa création.
+ */
 public class ImagesCache {
 
     private SparseArray<BitmapDrawable> cachedImages = new SparseArray<>();

@@ -1,3 +1,10 @@
+/**
+ * BitmapCache.java
+ * Université du Québec à Chicoutimi - Automne 2019
+ * Programmation Mobile
+ * TP
+ * Romain GUILLOT - Tanguy SAUTON - Mathieu VINCENT
+ */
 package com.example.projet_mobile;
 
 import android.graphics.Bitmap;
@@ -5,6 +12,10 @@ import android.graphics.Bitmap;
 import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
+/**
+ * Système de cache basé sur LruCache
+ * La taille du cache dépend de la mémoire totale du système
+ */
 public class BitmapCache {
     private LruCache<Integer, Bitmap> memoryCache;
 
