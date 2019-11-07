@@ -34,9 +34,12 @@ public class GalleryView extends View {
     private List<String> imagesPath;
 
 
+
     public GalleryView(Context context){
         super(context);
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
+
+        
         mScrollGestureDetector = new GestureDetector(context,new ScrollGesture());
 
 
@@ -46,6 +49,7 @@ public class GalleryView extends View {
             mColors[i] = new Paint();
             mColors[i].setColor(Color.argb(255, r.nextInt(256), r.nextInt(256), r.nextInt(256)));
         }
+
     }
 
     @Override
@@ -76,8 +80,8 @@ public class GalleryView extends View {
                 xOffset = i * imgWidth;
                 imgOffset = (firstLineImg*mNbColumns) + j * mNbColumns + i;
                 if (imgOffset < MAX_PICTURES) {
-                    canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
-                    //canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,new Paint(Color.BLACK));
+//                    canvas.drawRect(xOffset,yOffset,xOffset + imgWidth,yOffset + imgHeight, mColors[imgOffset]);
+                    canvas.drawBitmap(getCompressImage(imgOffset,imgHeight),xOffset,yOffset,null);
                 }
             }
         }
@@ -138,7 +142,6 @@ public class GalleryView extends View {
 
     public void setImages(List<String> imagesPath) {
         this.imagesPath = imagesPath;
-        invalidate();
     }
 
     @Nullable
@@ -146,9 +149,18 @@ public class GalleryView extends View {
         if (imagesPath == null || imagesPath.size() < index)
             return null;
 
+        String uri = imagesPath.get(index);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
-        Bitmap bitmap = BitmapFactory.decodeFile(imagesPath.get(index), options);
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(uri, options);
+        int imageWidth = options.outWidth;
+//        int imageHeight = options.outHeight;
+
+        BitmapFactory.Options options2 = new BitmapFactory.Options();
+        options2.inSampleSize = size / imageWidth;
+        Bitmap bitmap =  BitmapFactory.decodeFile(uri, options2);
+
         return  Bitmap.createScaledBitmap(bitmap, size, size, true);
     }
 }
