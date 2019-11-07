@@ -47,4 +47,8 @@ public class BitmapCache {
     public Bitmap getBitmapFromMemCache(Integer key) {
         return memoryCache.get(key);
     }
+
+    public void clearCache() {
+        memoryCache.evictAll();
+    }
 }

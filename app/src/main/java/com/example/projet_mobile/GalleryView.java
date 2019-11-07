@@ -150,10 +150,15 @@ public class GalleryView extends View {
     public class ScaleGesture extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            mScale /= detector.getScaleFactor();
+            float scale = mScale / detector.getScaleFactor();
 
-            mScale = Math.min(mScale, 7);
-            mScale = Math.max(mScale, 1);
+            scale = Math.min(scale, 7);
+            scale = Math.max(scale, 1);
+
+            if (scale != mScale)
+                mBitmapCache.clearCache();
+
+            mScale = scale;
 
             mNbColumns = (int) mScale;
             mNbRows = mImagesPath.size()/mNbColumns;
